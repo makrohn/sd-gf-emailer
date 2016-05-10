@@ -1,0 +1,9 @@
+api_base_url = "https://YOUR JIRA SERVER/rest/api/latest"
+search_filter = 'YOUR JQL HERE'
+fields = "labels,summary,reporter"
+username = 'SOME JIRA USER'
+password = 'SOME PASSWORD'
+smtp_server='YOUR SMTP SERVER'
+from_address = 'noreply@yourdomain'
+google_form_link = 'link to google form'
+ticket_number_field = 'some entryid'
