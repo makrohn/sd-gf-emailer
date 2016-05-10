@@ -39,7 +39,7 @@ def sendSurvey(issue):
     s = smtplib.SMTP(settings.smtp_server)
     s.sendmail(
         settings.from_address,
-        ['mkrohn@dyn.com', issue['fields']['reporter']['emailAddress']],
+        [issue['fields']['reporter']['emailAddress']],
         msg.as_string()
         )
     print msg
