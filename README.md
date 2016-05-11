@@ -1,6 +1,9 @@
 # service_desk_survey_sender
 Sends an email from Google Forms to requestor on recently closed JIRA tickets
 
+# Dependencies
+Install (from your method of choice, I like pip) requests and validate_email modules.
+
 # Setup
 1. Create a Google form, with a field called "Ticket Number"
 2. View the live Google form, and find the html for the ticket number field. Copy the entryid

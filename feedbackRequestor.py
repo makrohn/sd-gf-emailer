@@ -8,6 +8,7 @@ import requests
 import smtplib
 from email.mime.text import MIMEText
 import settings
+from validate_email import validate_email
 
 
 def getIssuesFromToday():
@@ -64,6 +65,7 @@ def addLabel(issue_key):
 todaysIssues = getIssuesFromToday()
 
 for ticket in todaysIssues['issues']:
-    if 'survey_sent' not in ticket['fields']['labels']:
+    if ('survey_sent' not in ticket['fields']['labels'] and
+            validate_email(issue['fields']['reporter']['emailAddress'])):
         sendSurvey(ticket)
         addLabel(ticket['key'])
