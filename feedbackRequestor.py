@@ -9,6 +9,13 @@ import smtplib
 from email.mime.text import MIMEText
 import settings
 from validate_email import validate_email
+import re
+
+
+def sanitize(string):
+    """Remove unwanted or dangerous character from a string"""
+    new_string = re.sub('[^a-zA-Z0-9 \n\.]', '_', string)
+    return new_string
 
 
 def getIssuesFromToday():
@@ -27,9 +34,10 @@ def getIssuesFromToday():
 def sendSurvey(issue):
     """Send a an email to the reporter of an issue"""
     msg = MIMEText(
-        'Hello!\n\n The Help Desk has recently closed your ticket, "' +
-        issue['fields']['summary'] + '". If you have a moment, please fill out ' +
-        ' this survey on how happy you are with your Help Desk experience.\n\n' +
+        'Hello!\n\n The Help Desk has recently closed your ticket, ' +
+        sanitize(issue['fields']['summary']) + 
+        '. If you have a moment, please fill out this survey on how happy' +
+        ' happy you are with your Help Desk experience.\n\n' +
         settings.google_form_link + '?entry.' +
         'settings.ticket_number_field' + '=' +
         issue['key'] + '\n\nThanks!\nThe Help Desk Staff'
@@ -66,6 +74,6 @@ todaysIssues = getIssuesFromToday()
 
 for ticket in todaysIssues['issues']:
     if ('survey_sent' not in ticket['fields']['labels'] and
-            validate_email(issue['fields']['reporter']['emailAddress'])):
+            validate_email(ticket['fields']['reporter']['emailAddress'])):
         sendSurvey(ticket)
         addLabel(ticket['key'])
