@@ -4,12 +4,12 @@ a google form to request feedback.
 """
 
 import json
-import requests
 import smtplib
 from email.mime.text import MIMEText
-import settings
-from validate_email import validate_email
 import re
+import requests
+from validate_email import validate_email
+import settings
 
 
 def sanitize(string):
@@ -18,9 +18,9 @@ def sanitize(string):
     return new_string
 
 
-def getIssuesFromToday():
+def get_issues_from_today():
     """Fetch a JSON file of issues according to filter"""
-    r = requests.get(
+    issues = requests.get(
         settings.api_base_url + "/search?jql=" + settings.search_filter +
         "&fields=" + settings.fields,
         auth=(
@@ -28,14 +28,14 @@ def getIssuesFromToday():
             settings.password
             )
         )
-    return r.json()
+    return issues.json()
 
 
-def sendSurvey(issue):
+def send_survey(issue):
     """Send a an email to the reporter of an issue"""
     msg = MIMEText(
         'Hello!\n\n The Help Desk has recently closed your ticket, ' +
-        sanitize(issue['fields']['summary']) + 
+        sanitize(issue['fields']['summary']) +
         '. If you have a moment, please fill out this survey on how happy' +
         ' happy you are with your Help Desk experience.\n\n' +
         settings.google_form_link + '?entry.' +
@@ -45,20 +45,19 @@ def sendSurvey(issue):
     msg['Subject'] = "Help Desk Survey for Ticket " + issue['key']
     msg['From'] = settings.from_address
     msg['To'] = issue['fields']['reporter']['emailAddress']
-    s = smtplib.SMTP(settings.smtp_server)
-    s.sendmail(
+    mail = smtplib.SMTP(settings.smtp_server)
+    mail.sendmail(
         settings.from_address,
         [issue['fields']['reporter']['emailAddress']],
         msg.as_string()
         )
-    print msg
 
 
-def addLabel(issue_key):
+def add_label(issue_key):
     """Add a label indicating that a survey has been sent to the requestor"""
     json_data = json.dumps({"update": {"labels": [{"add": "survey_sent"}]}})
     headers = {'Content-Type': 'application/json', }
-    r = requests.put(
+    requests.put(
         url=settings.api_base_url + '/issue/' + issue_key,
         data=json_data,
         auth=(
@@ -67,13 +66,9 @@ def addLabel(issue_key):
             ),
         headers=headers
         )
-    print r.status_code
-    print r.text
 
-todaysIssues = getIssuesFromToday()
-
-for ticket in todaysIssues['issues']:
+for ticket in get_issues_from_today()['issues']:
     if ('survey_sent' not in ticket['fields']['labels'] and
             validate_email(ticket['fields']['reporter']['emailAddress'])):
-        sendSurvey(ticket)
-        addLabel(ticket['key'])
+        send_survey(ticket)
+        add_label(ticket['key'])
